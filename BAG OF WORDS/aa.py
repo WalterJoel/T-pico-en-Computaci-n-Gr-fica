@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #con los comentarios puedo utilizar ñ y tildes
+import re # Para poder limpiar el texto usando exp regulares
 import nltk
 import csv
 import sys 
@@ -15,6 +16,8 @@ from nltk.tokenize import sent_tokenize, word_tokenize  #Para tokenizar las pala
 from nltk.corpus import stopwords                       #Para las palabras vacias
 from textblob import TextBlob as tb
 import unicodedata  
+from nltk.stem.lancaster import LancasterStemmer
+
 
 def elimina_tildes(input_str):
     nkfd_form = unicodedata.normalize('NFKD', unicode(input_str))
@@ -25,7 +28,6 @@ def freq(word, doc):
 
 def word_count(doc):
     return len(doc)
-
 
 def tf(word, doc):
     return (freq(word, doc) / float(word_count(doc)))
@@ -48,14 +50,16 @@ def tf_idf(word, doc, list_of_docs):
     return (tf(word, doc) * idf(word, list_of_docs))
 
 class ProcesarTexto:
-    # La libreria ofrece palabras en español para (STOPWORDS)
+    # La libreria ofrece palabras en ingles para (STOPWORDS)
     english_words    = set(stopwords.words('english'))
     list_news        = []  
     total_news       = 0
     path             = ''
-    
-    def __init__(self):
-        self.path = 'news2'
+    # Nuevo Porter Stemmer 
+    stemmer          = LancasterStemmer()    
+    def __init__(self,nombreCarpeta):
+        # Nombre de la carpeta donde estas todos los archivos
+        self.path       = nombreCarpeta
         self.total_news = 0
     def abrir_carpeta(self):
         for filename in os.listdir(self.path):
@@ -69,8 +73,9 @@ class ProcesarTexto:
             texto_temp = str(texto_temp)
             #Convierto a minusculas
             texto_temp = texto_temp.lower()
+            #Quito numeros y caracteres con exp regular
+            texto_temp = re.sub('[^a-z ' ']',' ',texto_temp)
             self.list_news.append(texto_temp)
-
             self.total_news = self.total_news + 1
             #print texto_temp
     def tokenize(self):
@@ -80,26 +85,31 @@ class ProcesarTexto:
         list_prioridades = [] 
         docs = {}
         while cont < self.total_news:
-            #En list_news tengo cada noticia
-            #Lista de contextos, [ ****** ]
-            #print self.list_news[cont]
+            print self.list_news[cont]
+            # Separo por comas
             string_temp =  self.list_news[cont].split()
+            print " "
+            print string_temp
+            # Quito palabras vacias 
             texto_limpio = self.quitar_palabras_vacias(string_temp)
-            #print texto_limpio
+            print " "
+            print texto_limpio
             # Diccionario donde almaceno
             docs[cont] = {'freq': {}, 'tf': {}, 'idf': {},
                         'tf-idf': {}, 'tokens': []}
             #divido por comas
             for token in texto_limpio:
+                token = self.stemmer.stem(str(token))
                 linea = token.split(',')
-                #The frequency computed for each tip
+                print linea 
+                #Frecuencia para cada palabra 
                 docs[cont]['freq'][token] = freq(token, texto_limpio)
-                #The term-frequency (Normalized Frequency)
+                #Frecuencia TF
                 docs[cont]['tf'][token] = tf(token, texto_limpio)
-                docs[cont]['tokens'] = texto_limpio
+                docs[cont]['tokens']    = texto_limpio
                 #print str(linea)
             cont = cont + 1
-        print docs[0]['freq']        
+        #print docs[0]['freq']        
         #Haciendo el calculo para todos
         while cont2 < self.total_news:
             for token in docs[cont2]['tf']:
@@ -119,7 +129,7 @@ class ProcesarTexto:
                 string_temp.append(w)
         return string_temp
 def main():
-    objetoProcesar = ProcesarTexto()
+    objetoProcesar = ProcesarTexto("news2") # Recibo como parametro la carpeta donde estan los archivos 
     objetoProcesar.abrir_carpeta()
     objetoProcesar.tokenize()
     #objetoProcesar.obtenerTFIDF()
