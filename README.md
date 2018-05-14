@@ -7,7 +7,7 @@ Primero se pre-procesa el texto ingresado, quitando caracteres especiales, núme
 **Estrategias utilizadas**:
 
 - Librería NLTK de python para Quitar los Stopwords 
-- Funcion lower() de python para convertir todo el texto a minuscula
+- Función lower() de python para convertir todo el texto a minuscula
 - Expresiones regulares para limpiar texto (quitar números y caracteres extraños)
 - Algoritmo de Porter para radicalizar los verbos
 - Algoritmo TF/IDF para calcular la relevancia que tiene cada palabra en el texto.
