@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #con los comentarios puedo utilizar ñ y tildes
+import operator
 import re # Para poder limpiar el texto usando exp regulares
 import nltk
 import csv
@@ -19,9 +20,6 @@ import unicodedata
 from nltk.stem.lancaster import LancasterStemmer
 
 
-def elimina_tildes(input_str):
-    nkfd_form = unicodedata.normalize('NFKD', unicode(input_str))
-    return u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
 
 def freq(word, doc):
     return doc.count(word)
@@ -84,43 +82,77 @@ class ProcesarTexto:
         result = 0
         list_prioridades = [] 
         docs = {}
+        palabras = []
         while cont < self.total_news:
-            print self.list_news[cont]
+            #print self.list_news[cont]
             # Separo por comas
             string_temp =  self.list_news[cont].split()
-            print " "
-            print string_temp
+            #print string_temp
             # Quito palabras vacias 
             texto_limpio = self.quitar_palabras_vacias(string_temp)
-            print " "
-            print texto_limpio
+            #print texto_limpio
             # Diccionario donde almaceno
             docs[cont] = {'freq': {}, 'tf': {}, 'idf': {},
                         'tf-idf': {}, 'tokens': []}
             #divido por comas
             for token in texto_limpio:
                 token = self.stemmer.stem(str(token))
+                if(token in palabras):
+                    pass
+                else:
+                    palabras.append(token)
+                # Utilizo el algoritmo de Porter para Radizalizar cada palabra
                 linea = token.split(',')
-                print linea 
+                #print linea 
                 #Frecuencia para cada palabra 
                 docs[cont]['freq'][token] = freq(token, texto_limpio)
                 #Frecuencia TF
-                docs[cont]['tf'][token] = tf(token, texto_limpio)
-                docs[cont]['tokens']    = texto_limpio
+                docs[cont]['tf'][token]   = tf(token, texto_limpio)
+                docs[cont]['tokens']      = texto_limpio
                 #print str(linea)
             cont = cont + 1
-        #print docs[0]['freq']        
+        #print palabras
+        outFile = open("result.js", 'a')        
         #Haciendo el calculo para todos
         while cont2 < self.total_news:
             for token in docs[cont2]['tf']:
-                # Frecuencia Inversa
+                # Frecuencia I
                 docs[cont2]['idf'][token] = idf(token, texto_limpio)
-                # TF*IDF
+                # TF*IDF para cada token
                 docs[cont2]['tf-idf'][token] = tf_idf(token, docs[cont2]['tokens'], texto_limpio)
             cont2 = cont2+1
-        print docs[0]['tf-idf']
-
-
+        cont3=0
+        # Creando mi matriz
+        list_of_list = []
+        j=0
+        while j <2436:
+            list_of_list.append([])
+            j+=1
+        lista_temp = []
+        i = 0
+        while i < 6041:
+            lista_temp.append(float(0.0))
+            i+=1
+        cont3 = 0
+        outFile.write("dy"+"\n")
+        outFile.write("2435"+"\n")
+        outFile.write("6042"+"\n")
+        while cont3<self.total_news: #Por cada documento
+            lista_temp = limpiar_lista(lista_temp)
+            for token in docs[cont3]['tf-idf']:
+                if token in palabras:
+                    lista_temp[palabras.index(token)] = (docs[cont3]['tf-idf'][token])
+                else:
+                    lista_temp[palabras.index(token)] = float(0.0)
+                #print token
+            #print lista_temp
+            list_of_list[cont3]=lista_temp
+            stringa = str(list_of_list[cont3]).replace(',',';')
+            stringa = stringa.replace('[','')
+            stringa = stringa.replace(']','')
+            outFile.write("doc"+str(cont3)+";"+stringa+"\n")
+            cont3+=1
+        outFile.close()
     def quitar_palabras_vacias(self,string_tokenizado):
         string_temp = []
         for w in string_tokenizado:
@@ -128,10 +160,16 @@ class ProcesarTexto:
             if w not in self.english_words:
                 string_temp.append(w)
         return string_temp
+def limpiar_lista(lista):
+        i = 0
+        while i < 6040:
+            lista[i]= 0
+            i+=1
+        return lista
+
 def main():
-    objetoProcesar = ProcesarTexto("news2") # Recibo como parametro la carpeta donde estan los archivos 
+    objetoProcesar = ProcesarTexto("rd") # Recibo como parametro la carpeta donde estan los archivos 
     objetoProcesar.abrir_carpeta()
     objetoProcesar.tokenize()
-    #objetoProcesar.obtenerTFIDF()
 main()
 
