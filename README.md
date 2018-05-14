@@ -14,5 +14,5 @@ Primero se pre-procesa el texto ingresado, quitando caracteres especiales, núme
 
 **Código dentro de la carpeta Bag of Words**:
 - El archivo *aa.py* es el que contiene todo el código de Bag of Words que genera la matriz TF/IDF.
-- Dentro de la carpeta *d3-WordCLoud -> Example* se encuentra  un archivo llamado reducido.py que es lo mismo que el archivo aa.py con la unica diferencia que este codigo genera una salida que es el *archivo result.js*, el cual es la entrada que recibe el código de wordcloud para generar la visualización de palabras más relevantes.
+- Dentro de la carpeta *d3-WordCLoud -> Example* se encuentra  un archivo llamado reducido.py que es lo mismo que el archivo aa.py con la única diferencia que este codigo genera una salida que es el *archivo result.js*, el cual es la entrada que recibe el código de wordcloud para generar la visualización de palabras más relevantes.
 
